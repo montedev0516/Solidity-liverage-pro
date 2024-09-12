@@ -558,6 +558,16 @@ contract("XOLE", async accounts => {
 
     })
 
+    // Admin Test
+    it("Admin setDevFundRatio test", async () => {
+        let timeLock = await utils.createTimelock(admin);
+        let xole0 = await utils.createXOLE(ole.address, timeLock.address, dev, dexAgg.address, accounts[0]);
+        await timeLock.executeTransaction(xole0.address, 0, 'setDevFundRatio(uint256)',
+            web3.eth.abi.encodeParameters(['uint256'], [1]), 0)
+        assert.equal(1, await xole0.devFundRatio());
+        await assertThrows(xole0.setDevFundRatio(1), 'caller must be admin');
+    })
+
 
 
 
