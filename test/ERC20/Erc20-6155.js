@@ -388,7 +388,16 @@ contract("XOLE", async accounts => {
         assertPrint("John staked:", toWei(500), (await xole.locked(john)).amount);
         assertPrint("Total staked:", toWei(1000), await xole.totalLocked());
 
-        
+        // Block time insensitive
+        step("Advancing block time ...");
+        timeMachine.advanceTimeAndBlock(1000);
+        assertPrint("Dev Fund:", '996980105262148814', await xole.devFund());
+
+        step("John stack more, but earning should not change because no new reward");
+        await ole.approve(xole.address, toWei(1000), {from: john});
+        await xole.increase_amount(toWei(1000), {from: john});
+        assertPrint("Total staked:", toWei(2000), await xole.totalLocked());
+        assertPrint("Dev Fund:", '996980105262148814', await xole.devFund());
 
     })
 
