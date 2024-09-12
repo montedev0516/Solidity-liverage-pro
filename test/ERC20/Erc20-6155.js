@@ -131,6 +131,28 @@ contract("XOLE", async accounts => {
         m.log("Dev OLE balance:", await ole.balanceOf(dev));
         m.log("xOLE OLE balance:", await ole.balanceOf(xole.address));
     })
+
+    it("Convert OLE Token exceed available", async () => {
+        await ole.mint(xole.address, toWei(10000));
+        await ole.mint(admin, toWei(10000));
+        await ole.approve(xole.address, toWei(10000));
+        let lastbk = await web3.eth.getBlock('latest');
+        await advanceBlockAndSetTime(lastbk.timestamp - 10);
+        await xole.create_lock(toWei(10000), lastbk.timestamp + 2 * WEEK + 10);
+
+        await xole.convertToSharingToken(toWei(10000), 0, '0x');
+
+        m.log("Withdrawing dev fund");
+        await xole.withdrawDevFund({from: dev});
+
+        m.log("ole balance in xOLE:", await ole.balanceOf(xole.address));
+        m.log("supply:", await xole.totalLocked());
+        m.log("totalRewarded:", await xole.totalRewarded());
+        m.log("withdrewReward:", await xole.withdrewReward());
+        m.log("devFund:", await xole.devFund());
+        await assertThrows(xole.convertToSharingToken(toWei(1), 0, '0x'), 'Exceed share token balance');
+
+    })
   
     
     
