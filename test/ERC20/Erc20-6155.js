@@ -460,7 +460,19 @@ contract("XOLE", async accounts => {
         await dai.mint(xole.address, toWei(1000));
 
         assert.equal('1500000000000000000000', (await xole.shareableTokenAmount()).toString());
-        assert.equal('250000000000000000000', (await xole.claimableTokenAmount()).toString());
+        assert.equal('250000000000000000000', (await xole.claimableTokenAmount()).toString());'
+        
+        // withdraw devFund
+        await xole.withdrawDevFund({from: dev});
+        assert.equal('250000000000000000000', (await dai.balanceOf(dev)).toString());
+
+        await xole.convertToSharingToken(toWei(1500), 0, '0x');
+
+        assert.equal('1750000000000000000000', (await dai.balanceOf(xole.address)).toString());
+        assert.equal('1000000000000000000000', (await xole.totalRewarded()).toString());
+        assert.equal('750000000000000000000', (await xole.devFund()).toString());
+
+        await assertThrows(xole.convertToSharingToken(toWei(1), 0, '0x'), 'Exceed share token balance');'
 
      
     })
