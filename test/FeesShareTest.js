@@ -349,6 +349,7 @@ contract("XOLE", async accounts => {
 
         await xole.convertToSharingToken(toWei(1), 0, daiOLEDexData);
     })
+    
     it("John and Tom stakes, Tom stakes more, shares fees", async () => {
         m.log("process.env.FASTMODE", process.env.FASTMODE);
         if (process.env.FASTMODE === 'true') {

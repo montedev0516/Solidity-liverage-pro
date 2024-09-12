@@ -353,6 +353,46 @@ contract("XOLE", async accounts => {
         await xole.convertToSharingToken(toWei(1), 0, daiOLEDexData);
     })
 
+    it("John and Tom stakes, Tom stakes more, shares fees", async () => {
+        m.log("process.env.FASTMODE", process.env.FASTMODE);
+        if (process.env.FASTMODE === 'true') {
+            m.log("Skipping this test for FAST Mode");
+            return;
+        }
+
+        await ole.mint(john, toWei(10000));
+        await ole.mint(tom, toWei(10000));
+        await dai.mint(xole.address, toWei(1000));
+
+        await ole.approve(xole.address, toWei(500), {from: john});
+        await ole.approve(xole.address, toWei(300), {from: tom});
+
+        let lastbk = await web3.eth.getBlock('latest');
+        await advanceBlockAndSetTime(lastbk.timestamp - 10);
+        step("John stake 500");
+        await xole.create_lock(toWei(500), lastbk.timestamp + 2 * WEEK + 10, {from: john});
+        assertPrint("John staked:", toWei(500), (await xole.locked(john)).amount);
+        step("Tom stake 300");
+        await xole.create_lock(toWei(300), lastbk.timestamp + 2 * WEEK + 10, {from: tom});
+        assertPrint("Tom staked:", toWei(300), (await xole.locked(tom)).amount);
+        assertPrint("Total staked:", toWei(800), await xole.totalLocked());
+        step("New reward 1");
+        await xole.convertToSharingToken(toWei(1), 0, daiOLEDexData);
+        assertPrint("Dev Fund:", '498495030004550854', await xole.devFund());
+        assertPrint("Total to share:", '498495030004550855', await xole.totalRewarded());
+
+        step("Tom stake more 200");
+        await ole.approve(xole.address, toWei(200), {from: tom});
+        await xole.increase_amount(toWei(200), {from: tom});
+        assertPrint("Tom staked:", toWei(500), (await xole.locked(tom)).amount);
+        assertPrint("John staked:", toWei(500), (await xole.locked(john)).amount);
+        assertPrint("Total staked:", toWei(1000), await xole.totalLocked());
+
+        
+
+    })
+
+
 
 
 
