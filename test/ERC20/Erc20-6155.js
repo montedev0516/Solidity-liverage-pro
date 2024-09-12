@@ -483,9 +483,24 @@ contract("XOLE", async accounts => {
 
         assert.equal('0', (await xole.shareableTokenAmount()).toString());
         assert.equal('0', (await xole.claimableTokenAmount()).toString());
-
      
     })
+
+    it("Convert minBuy limit test", async () => {
+        await dai.mint(xole.address, toWei(1000));
+        await ole.mint(admin, toWei(10000));
+        await ole.approve(xole.address, toWei(10000));
+        let lastbk = await web3.eth.getBlock('latest');
+        await advanceBlockAndSetTime(lastbk.timestamp - 10);
+        await xole.create_lock(toWei(10000), lastbk.timestamp + 2 * WEEK + 10);
+        assert.equal('10000000000000000000000', (await usdt.balanceOf(xole.address)).toString());
+        await assertThrows(xole.convertToSharingToken(toWei(1000), '10906610893880149131582', daiUsdtDexData), 'buy amount less than min');
+
+        await assertThrows(xole.convertToSharingToken(toWei(1000), "895794058774498675512",
+            "0x01" + "000000" + "03" + addressToBytes(dai.address) + addressToBytes(usdt.address) + addressToBytes(ole.address)), 'buy amount less than min');
+
+    })
+
 
 
 
