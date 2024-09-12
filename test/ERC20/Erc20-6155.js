@@ -219,6 +219,32 @@ contract("XOLE", async accounts => {
         assert.equal('0', (await xole.devFund()).toString());
     })
 
+    it("Convert DAI to USDT to OLE ", async () => {
+        await dai.mint(xole.address, toWei(1000));
+        await ole.mint(admin, toWei(10000));
+        await ole.approve(xole.address, toWei(10000));
+        let lastbk = await web3.eth.getBlock('latest');
+        await advanceBlockAndSetTime(lastbk.timestamp - 10);
+        await xole.create_lock(toWei(10000), lastbk.timestamp + 2 * WEEK + 10);
+        assert.equal('10000000000000000000000', (await usdt.balanceOf(xole.address)).toString());
+        await xole.convertToSharingToken(toWei(1000), 0, "0x01" + "000000" + "03" + addressToBytes(dai.address) + addressToBytes(usdt.address) + addressToBytes(ole.address));
+        m.log("xOLE USDT balance:", await usdt.balanceOf(xole.address));
+        assert.equal('10000000000000000000000', (await usdt.balanceOf(xole.address)).toString());
+
+        m.log("xOLE DAI balance:", await dai.balanceOf(xole.address));
+        assert.equal('0', (await dai.balanceOf(xole.address)).toString());
+
+        m.log("xOLE OLE balance:", await ole.balanceOf(xole.address));
+        assert.equal('10895794058774498675511', (await ole.balanceOf(xole.address)).toString());
+
+        m.log("xOLE totalRewarded:", await xole.totalRewarded());
+        assert.equal('447897029387249337756', (await xole.totalRewarded()).toString());
+
+        m.log("xOLE devFund:", await xole.devFund());
+        assert.equal('447897029387249337755', (await xole.devFund()).toString());
+    })
+
+
 
 
   
