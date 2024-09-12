@@ -103,6 +103,34 @@ contract("XOLE", async accounts => {
     afterEach(async () => {
         await timeMachine.revertToSnapshot(snapshotId);
     });
+
+    it("Convert current erc20 holdings to reward, withdrawn dev fund", async () => {
+
+        assert.equal('0', (await ole.balanceOf(xole.address)).toString());
+
+        await ole.mint(admin, toWei(10000));
+        await ole.approve(xole.address, toWei(10000));
+        let lastbk = await web3.eth.getBlock('latest');
+        await advanceBlockAndSetTime(lastbk.timestamp - 10);
+        await xole.create_lock(toWei(10000), lastbk.timestamp + 2 * WEEK + 10);
+
+        await xole.convertToSharingToken(toWei(1), 0, usdtOLEDexData);
+        m.log("devFund:", (await xole.devFund()).toString());
+        m.log("totalRewarded:", (await xole.totalRewarded()).toString());
+        m.log("supply:", (await xole.totalLocked()).toString());
+        m.log("lastUpdateTime:", (await xole.lastUpdateTime()).toString());
+        m.log("rewardPerTokenStored:", (await xole.rewardPerTokenStored()).toString());
+        assert.equal('498495030004550854', (await xole.devFund()).toString());
+
+        m.log("Withdrawing dev fund");
+        await xole.withdrawDevFund({from: dev});
+        assert.equal('0', (await xole.devFund()).toString());
+        assert.equal('10000498495030004550855', (await ole.balanceOf(xole.address)).toString());
+        assert.equal('498495030004550854', (await ole.balanceOf(dev)).toString());
+        m.log("Dev Fund balance:", await xole.devFund());
+        m.log("Dev OLE balance:", await ole.balanceOf(dev));
+        m.log("xOLE OLE balance:", await ole.balanceOf(xole.address));
+    })
   
     
     
