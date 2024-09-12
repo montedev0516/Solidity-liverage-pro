@@ -421,6 +421,60 @@ contract("XOLE", async accounts => {
         lastbk = await web3.eth.getBlock('latest');
         await xole.create_lock(toWei(1000), lastbk.timestamp + 3 * WEEK, {from: john});
 
+        step("New reward 100");
+        await xole.convertToSharingToken(toWei(100), 0, daiOLEDexData);
+        assertPrint("Dev Fund:", '199596275059873518079', await xole.devFund());
+
+        lastbk = await web3.eth.getBlock('latest');
+        await xole.increase_unlock_time(lastbk.timestamp + 5 * WEEK, {from: john});
+        assertPrint("Dev Fund:", '199596275059873518079', await xole.devFund());
+
+        step("New reward 100");
+        await xole.convertToSharingToken(toWei(100), 0, daiOLEDexData);
+        assertPrint("Dev Fund:", '248999421985512891445', await xole.devFund());
+
+    })
+
+    it("Convert dexData is 0x ", async () => {
+        await dai.mint(xole.address, toWei(1000));
+        await xole.setShareToken(dai.address);
+        assert.equal('1000000000000000000000', (await xole.shareableTokenAmount()).toString());
+        assert.equal('0', (await xole.claimableTokenAmount()).toString());
+
+        await xole.convertToSharingToken(toWei(500), 0, '0x');
+
+        m.log("xOLE dai balance:", await dai.balanceOf(xole.address));
+        assert.equal('1000000000000000000000', (await dai.balanceOf(xole.address)).toString());
+
+
+        m.log("xOLE totalRewarded:", await xole.totalRewarded());
+        assert.equal('250000000000000000000', (await xole.totalRewarded()).toString());
+
+        m.log("xOLE devFund:", await xole.devFund());
+        assert.equal('250000000000000000000', (await xole.devFund()).toString());
+
+        assert.equal('500000000000000000000', (await xole.shareableTokenAmount()).toString());
+        assert.equal('250000000000000000000', (await xole.claimableTokenAmount()).toString());
+
+
+        await dai.mint(xole.address, toWei(1000));
+
+        assert.equal('1500000000000000000000', (await xole.shareableTokenAmount()).toString());
+        assert.equal('250000000000000000000', (await xole.claimableTokenAmount()).toString());'
+        
+        // withdraw devFund
+        await xole.withdrawDevFund({from: dev});
+        assert.equal('250000000000000000000', (await dai.balanceOf(dev)).toString());
+
+        await xole.convertToSharingToken(toWei(1500), 0, '0x');
+
+        assert.equal('1750000000000000000000', (await dai.balanceOf(xole.address)).toString());
+        assert.equal('1000000000000000000000', (await xole.totalRewarded()).toString());
+        assert.equal('750000000000000000000', (await xole.devFund()).toString());
+
+        await assertThrows(xole.convertToSharingToken(toWei(1), 0, '0x'), 'Exceed share token balance');'
+
+     
     })
 
 
