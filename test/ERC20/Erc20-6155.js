@@ -501,6 +501,20 @@ contract("XOLE", async accounts => {
 
     })
 
+    it("Convert shareToken=oleToken test", async () => {
+        await ole.mint(admin, toWei(10000));
+        await ole.approve(xole.address, toWei(10000));
+        let lastbk = await web3.eth.getBlock('latest');
+        await advanceBlockAndSetTime(lastbk.timestamp - 10);
+        await xole.create_lock(toWei(1), lastbk.timestamp + 2 * WEEK + 10);
+
+        assert.equal('0', (await xole.shareableTokenAmount()).toString());
+        assert.equal('0', (await xole.claimableTokenAmount()).toString());
+        await ole.mint(xole.address, toWei(10000));
+        assert.equal("10000000000000000000000", (await xole.shareableTokenAmount()).toString());
+        assert.equal('0', (await xole.claimableTokenAmount()).toString());
+    })
+
 
 
 
