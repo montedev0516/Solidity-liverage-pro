@@ -177,6 +177,21 @@ contract("XOLE", async accounts => {
         m.log("xole.totalSupply", (await xole.totalSupply()).toString());
         m.log("xole.balanceOf", (await xole.balanceOf(admin)).toString());
         
+        assert.equal('0', (await xole.rewardPerTokenStored()).toString());
+        // withdraw devFund
+        await xole.withdrawDevFund({from: dev});
+        assert.equal('493579017198530649425', (await ole.balanceOf(dev)).toString());
+        // withdraw communityFund
+        await xole.withdrawCommunityFund(communityAcc);
+        assert.equal('493579017198530649425', (await ole.balanceOf(communityAcc)).toString());
+        assert.equal('493579017198530649425', (await xole.withdrewReward()).toString());
+        //add sharingToken Reward 2000
+        await usdt.mint(xole.address, toWei(2000));
+        //sharing 1000
+        await xole.convertToSharingToken(toWei(1000), 0, usdtOLEDexData);
+        assert.equal('987158034397061298850', (await xole.totalRewarded()).toString());
+        //Exceed available balance
+        await assertThrows(xole.convertToSharingToken(toWei(20001), 0, usdtOLEDexData), 'Exceed available balance');
     })
   
     
