@@ -460,7 +460,7 @@ contract("XOLE", async accounts => {
         await dai.mint(xole.address, toWei(1000));
 
         assert.equal('1500000000000000000000', (await xole.shareableTokenAmount()).toString());
-        assert.equal('250000000000000000000', (await xole.claimableTokenAmount()).toString());'
+        assert.equal('250000000000000000000', (await xole.claimableTokenAmount()).toString());
         
         // withdraw devFund
         await xole.withdrawDevFund({from: dev});
@@ -593,6 +593,16 @@ contract("XOLE", async accounts => {
         await assertThrows(timeLock.executeTransaction(xole0.address, 0, 'setShareToken(address)',
             web3.eth.abi.encodeParameters(['address'], [shareToken]), 0), 'Transaction execution reverted');
 
+    })
+
+    it("Admin setOleLpStakeToken test", async () => {
+        let oleLpStakeToken = ole.address;
+        let timeLock = await utils.createTimelock(admin);
+        let xole0 = await utils.createXOLE(ole.address, timeLock.address, dev, dexAgg.address, accounts[0]);
+        await timeLock.executeTransaction(xole0.address, 0, 'setOleLpStakeToken(address)',
+            web3.eth.abi.encodeParameters(['address'], [oleLpStakeToken]), 0)
+        assert.equal(oleLpStakeToken, await xole0.oleLpStakeToken());
+        await assertThrows(xole0.setOleLpStakeToken(oleLpStakeToken), 'caller must be admin');
     })
 
 
