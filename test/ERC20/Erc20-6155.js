@@ -578,6 +578,23 @@ contract("XOLE", async accounts => {
         await assertThrows(xole0.setDexAgg(newDexAgg), 'caller must be admin');
     })
 
+    it("Admin setShareToken test", async () => {
+        let shareToken = ole.address;
+        let timeLock = await utils.createTimelock(admin);
+        let xole0 = await utils.createXOLE(ole.address, timeLock.address, dev, dexAgg.address, accounts[0]);
+        await timeLock.executeTransaction(xole0.address, 0, 'setShareToken(address)',
+            web3.eth.abi.encodeParameters(['address'], [shareToken]), 0)
+        assert.equal(shareToken, await xole0.shareToken());
+        await assertThrows(xole0.setShareToken(shareToken), 'caller must be admin');
+
+        await ole.mint(xole0.address, toWei(10000));
+        await xole0.convertToSharingToken(toWei(10000), 0, '0x');
+        // Withdraw fund firstly
+        await assertThrows(timeLock.executeTransaction(xole0.address, 0, 'setShareToken(address)',
+            web3.eth.abi.encodeParameters(['address'], [shareToken]), 0), 'Transaction execution reverted');
+
+    })
+
 
 
 
