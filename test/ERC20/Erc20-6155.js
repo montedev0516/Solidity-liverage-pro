@@ -99,6 +99,10 @@ contract("XOLE", async accounts => {
         let snapshot = await timeMachine.takeSnapshot();
         snapshotId = snapshot['result'];
     });
+
+    afterEach(async () => {
+        await timeMachine.revertToSnapshot(snapshotId);
+    });
   
     
     
