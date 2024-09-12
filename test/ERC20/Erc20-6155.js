@@ -568,6 +568,16 @@ contract("XOLE", async accounts => {
         await assertThrows(xole0.setDevFundRatio(1), 'caller must be admin');
     })
 
+    it("Admin setDexAgg test", async () => {
+        let newDexAgg = accounts[3];
+        let timeLock = await utils.createTimelock(admin);
+        let xole0 = await utils.createXOLE(ole.address, timeLock.address, dev, dexAgg.address, accounts[0]);
+        await timeLock.executeTransaction(xole0.address, 0, 'setDexAgg(address)',
+            web3.eth.abi.encodeParameters(['address'], [newDexAgg]), 0)
+        assert.equal(newDexAgg, await xole0.dexAgg());
+        await assertThrows(xole0.setDexAgg(newDexAgg), 'caller must be admin');
+    })
+
 
 
 
