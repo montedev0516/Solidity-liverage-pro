@@ -153,6 +153,31 @@ contract("XOLE", async accounts => {
         await assertThrows(xole.convertToSharingToken(toWei(1), 0, '0x'), 'Exceed share token balance');
 
     })
+
+    it("Convert Sharing Token correct", async () => {
+        await dai.mint(xole.address, toWei(1000));
+        await ole.mint(admin, toWei(10000));
+        await ole.approve(xole.address, toWei(10000));
+        let lastbk = await web3.eth.getBlock('latest');
+        await advanceBlockAndSetTime(lastbk.timestamp - 10);
+        await xole.create_lock(toWei(10000), lastbk.timestamp + 2 * WEEK + 10);
+        await xole.convertToSharingToken(toWei(1000), 0, daiOLEDexData);
+
+        m.log("xOLE OLE balance:", await ole.balanceOf(xole.address));
+        assert.equal('10987158034397061298850', (await ole.balanceOf(xole.address)).toString());
+
+        m.log("xOLE totalRewarded:", await xole.totalRewarded());
+        assert.equal('493579017198530649425', (await xole.totalRewarded()).toString());
+
+        m.log("xOLE devFund:", await xole.devFund());
+        assert.equal('493579017198530649425', (await xole.devFund()).toString());
+
+        m.log("xOLE withdrewReward:", await xole.withdrewReward());
+        assert.equal('0', (await xole.withdrewReward()).toString());
+        m.log("xole.totalSupply", (await xole.totalSupply()).toString());
+        m.log("xole.balanceOf", (await xole.balanceOf(admin)).toString());
+        
+    })
   
     
     
