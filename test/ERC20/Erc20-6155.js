@@ -530,6 +530,18 @@ contract("XOLE", async accounts => {
         assert.equal("10000000000000000000000", (await xole.shareableTokenAmount()).toString());
         assert.equal('987158034397061298850', (await xole.claimableTokenAmount()).toString());
         assert.equal('987158034397061298850', (await xole.devFund()).toString());
+
+        // convert ole
+        await xole.convertToSharingToken(toWei(1000), '0', '0x');
+        assert.equal("9000000000000000000000", (await xole.shareableTokenAmount()).toString());
+        assert.equal('1487158034397061298850', (await xole.claimableTokenAmount()).toString());
+        assert.equal('1487158034397061298850', (await xole.devFund()).toString());
+        // withdrawCommunityFund
+        await xole.withdrawCommunityFund(communityAcc);
+        assert.equal('1487158034397061298850', (await ole.balanceOf(communityAcc)).toString());
+        assert.equal("9000000000000000000000", (await xole.shareableTokenAmount()).toString());
+        assert.equal('0', (await xole.claimableTokenAmount()).toString());
+        assert.equal('1487158034397061298850', (await xole.devFund()).toString());
     })
 
 
