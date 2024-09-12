@@ -409,6 +409,18 @@ contract("XOLE", async accounts => {
         assertPrint("Total staked:", toWei(500), await xole.totalLocked());
         assertPrint("Dev Fund:", '100494603912584309258', await xole.devFund());
 
+        step("New reward 100");
+        await xole.convertToSharingToken(toWei(100), 0, daiOLEDexData);
+        assertPrint("Dev Fund:", '150094767100146587308', await xole.devFund());
+
+        step("Tom exit, and more reward");
+        await xole.withdraw({from: tom});
+
+        step("John stack more, but earning should not change because no new reward");
+        await ole.approve(xole.address, toWei(1000), {from: john});
+        lastbk = await web3.eth.getBlock('latest');
+        await xole.create_lock(toWei(1000), lastbk.timestamp + 3 * WEEK, {from: john});
+
     })
 
 
